@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.smbms.dao.user.UserDao">
+    <sql id="userSql">
+        u.id, u.userCode, u.userName, u.userPassword, u.gender,
+        u.birthday, u.phone, u.address, u.userRole, u.createdBy, u.creationDate,u. modifyBy,u. modifyDate
+    </sql>
+    <select id="getUserById" resultType="cn.smbms.pojo.User">
+        select u.*,r.roleName as userRoleName from smbms_user u,smbms_role r where u.id=#{id} and u.userRole = r.id
+    </select>
+    <delete id="deleteUserById">
+        delete from smbms_user where id=#{delId}
+    </delete>
+
+    <insert id="add">
+        insert into smbms_user (userCode,userName,userPassword,userRole,gender,birthday,phone,address,creationDate,createdBy,picPath)
+        values(#{user.userCode},#{user.userName},#{user.userPassword},#{user.userRole},#{user.gender},#{user.birthday},#{user.phone},#{user.address},
+               #{user.creationDate},#{user.createdBy},#{user.picPath})
+    </insert>
+
+    <select id="getLoginUser" resultType="cn.smbms.pojo.User">
+        select <include refid="userSql"/> from smbms_user u where userCode=#{userCode}
+    </select>
+
+    <update id="updatePwd">
+        update smbms_user set userPassword= #{pwd} where id = #{id}
+    </update>
+
+    <update id="modify">
+        update smbms_user set userName=#{user.userName},gender=#{user.gender},birthday=#{user.birthday},phone=#{user.phone},address=#{user.address},userRole=#{user.address},modifyBy=#{user.modifyBy},modifyDate=#{user.modifyDate} where id = #{user.id}
+    </update>
+
+    <select id="getUserCount" resultType="int">
+        select count(1) as count from smbms_user u,smbms_role r
+        <trim prefix="where" prefixOverrides="and|or">
+                and u.userRole = r.id
+            <if test="#{userName}!=null and #{userName}!=''">
+                and  u.userName like concat('%',#{userName},'%')
+            </if>
+            <if test="userRole>0">
+                and u.userRole =#{userRole}
+            </if>
+        </trim>
+    </select>
+
+    <select id="getUserList" resultType="cn.smbms.pojo.User">
+        select u.*,r.roleName as userRoleName from smbms_user u,smbms_role r
+        <trim prefix="where " prefixOverrides="and|or" >
+           and u.userRole = r.id
+            <if test="#{userName}!=null and #{userName}!=''">
+                and  u.userName like concat('%',#{userName},'%')
+            </if>
+            <if test="userRole>0">
+                and u.userRole =#{userRole}
+            </if>
+        </trim>
+        order by creationDate DESC limit #{currentPageNo},#{pageSize}
+    </select>
+</mapper>
